@@ -8,8 +8,6 @@ jobs:
         params:
           path: dataworks-s3-object-tagger-pr
           status: pending
-        input_mapping:
-          dataworks-s3-object-tagger: dataworks-s3-object-tagger-pr
       - .: (( inject meta.plan.terraform-bootstrap ))
         input_mapping:
           dataworks-s3-object-tagger: dataworks-s3-object-tagger-pr
