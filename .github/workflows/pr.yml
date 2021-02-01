@@ -1,6 +1,10 @@
 name: Pull request build and test
 
-on: pull_request
+on:
+  pull_request:
+    paths-ignore:
+      - 'ci/**'
+      - '**/*.md'
 
 env:
   IMAGE_NAME: dwpdigital/dataworks-s3-object-tagger
