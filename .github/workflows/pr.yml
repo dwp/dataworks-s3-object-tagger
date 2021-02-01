@@ -40,7 +40,7 @@ jobs:
           git push
 
       - name: unit-tests
-        run: make unit-test
+        run: make unit-tests
 
       - name: Build Docker image
         run: docker build -t ${{ env.IMAGE_NAME }}:latest .
