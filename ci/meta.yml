@@ -32,6 +32,8 @@ meta:
             repository: dwpdigital/jinja-yaml-aws
             version: 0.0.19
             tag: 0.0.19
+        params:
+          AWS_REGION: ((dataworks.aws_region))
         run:
           path: sh
           args:
