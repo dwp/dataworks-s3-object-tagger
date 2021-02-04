@@ -1,16 +1,12 @@
 name: Master
 
 on:
-  pull_request:
+  push:
+    branches:
+      - master
     paths-ignore:
-      - 'ci/**'
-      - '**/*.md'
-#  push:
-#    branches:
-#      - master
-#    paths-ignore:
-#      - 'docs/**'
-#      - '*.md'
+      - 'docs/**'
+      - '*.md'
 
 env:
   IMAGE_NAME: dwpdigital/dataworks-s3-object-tagger
