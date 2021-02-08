@@ -178,7 +178,8 @@ def get_parameters():
     parser.add_argument("--csv-location", help="The location of the CSV file to parse")
     parser.add_argument("--data-bucket", help="The bucket to tag")
     parser.add_argument(
-        "--data-s3-prefix", help="The path to crawl through where objects need to be tagged"
+        "--data-s3-prefix",
+        help="The path to crawl through where objects need to be tagged",
     )
     parser.add_argument("--log-level", default="INFO")
     parser.add_argument("--environment", default="NOT_SET")
@@ -240,7 +241,9 @@ if __name__ == "__main__":
         logger.info(
             f'Getting list of objects to tag in", "bucket": "{args.data_bucket}", "s3_prefix": "{args.data_s3_prefix}'
         )
-        objects_to_tag = get_objects_in_prefix(args.data_bucket, args.data_s3_prefix, s3)
+        objects_to_tag = get_objects_in_prefix(
+            args.data_bucket, args.data_s3_prefix, s3
+        )
         logger.info(f'Beginning to tag objects", "bucket": "{args.data_bucket}')
         tag_path(objects_to_tag, s3, args.data_bucket, csv_data)
         logger.info("--Finished--")
