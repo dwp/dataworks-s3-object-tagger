@@ -50,7 +50,9 @@ def read_csv(csv_location, s3_client):
         s3_client.download_file(bucket, key, file_name)
         logger.info(f'Successfully downloaded", "file_name": "{file_name}')
 
-        logger.info(f'Attempting to read into dictionary", "csv_location": "{csv_location}", "csv_file_name": "{file_name}')
+        logger.info(
+            f'Attempting to read into dictionary", "csv_location": "{csv_location}", "csv_file_name": "{file_name}'
+        )
         with open(file_name) as f:
             reader = csv.DictReader(f)
             for row in reader:
@@ -60,7 +62,9 @@ def read_csv(csv_location, s3_client):
                     )
                 else:
                     csv_dict[row["db"]] = [{"table": row["table"], "pii": row["pii"]}]
-        logger.info(f'Successfully read", "csv_location": "{csv_location}", "csv_file_name": "{file_name}')
+        logger.info(
+            f'Successfully read", "csv_location": "{csv_location}", "csv_file_name": "{file_name}'
+        )
         return csv_dict
     except Exception as err:
         logger.error(
@@ -128,7 +132,9 @@ def get_objects_in_prefix(s3_bucket, s3_prefix, s3_client):
         s3_prefix = s3_prefix.rstrip("/")
 
     try:
-        logger.info(f'Contacting S3 for a list of objects", "data_bucket": "{s3_bucket}", "data_s3_prefix": "{s3_prefix}')
+        logger.info(
+            f'Contacting S3 for a list of objects", "data_bucket": "{s3_bucket}", "data_s3_prefix": "{s3_prefix}'
+        )
         objects_in_prefix = s3_client.list_objects(Bucket=s3_bucket, Prefix=s3_prefix)[
             "Contents"
         ]
@@ -179,7 +185,8 @@ def get_parameters():
     parser.add_argument("--csv-location", help="The location of the CSV file to parse")
     parser.add_argument("--data-bucket", help="The bucket to tag")
     parser.add_argument(
-        "--data-s3-prefix", help="The path to crawl through where objects need to be tagged"
+        "--data-s3-prefix",
+        help="The path to crawl through where objects need to be tagged",
     )
     parser.add_argument("--log-level", default="INFO")
     parser.add_argument("--environment", default="NOT_SET")
@@ -229,30 +236,42 @@ if __name__ == "__main__":
         args = get_parameters()
         logger = setup_logging(args.log_level)
 
-        logger.info(f'Args initiated", "csv_location": "{args.csv_location}", "data_bucket": "{args.data_bucket}", '
-                    f'"data_s3_prefix": "{args.data_s3_prefix}')
+        logger.info(
+            f'Args initiated", "csv_location": "{args.csv_location}", "data_bucket": "{args.data_bucket}", '
+            f'"data_s3_prefix": "{args.data_s3_prefix}'
+        )
 
         logger.info("Instantiating S3 client")
         s3 = get_s3()
         logger.info("S3 client instantiated")
 
-        logger.info(f'Fetching and reading CSV file", "csv_location": "{args.csv_location}')
+        logger.info(
+            f'Fetching and reading CSV file", "csv_location": "{args.csv_location}'
+        )
         csv_data = read_csv(args.csv_location, s3)
 
         logger.info(
             f'Getting list of objects to tag", "data_bucket": "{args.data_bucket}", "data_s3_prefix": "{args.data_s3_prefix}'
         )
-        objects_to_tag = get_objects_in_prefix(args.data_bucket, args.data_s3_prefix, s3)
+        objects_to_tag = get_objects_in_prefix(
+            args.data_bucket, args.data_s3_prefix, s3
+        )
 
-        logger.info(f'Beginning to tag objects", "data_bucket": "{args.data_bucket}", '
-                    f'"csv_location": "{args.csv_location}')
+        logger.info(
+            f'Beginning to tag objects", "data_bucket": "{args.data_bucket}", '
+            f'"csv_location": "{args.csv_location}'
+        )
 
-        logger.debug(f'Verbose list of items found and will attempt to tag", "data_bucket": "{args.data_bucket}",'
-                     f' "objects_to_tag": "{objects_to_tag}')
+        logger.debug(
+            f'Verbose list of items found and will attempt to tag", "data_bucket": "{args.data_bucket}",'
+            f' "objects_to_tag": "{objects_to_tag}'
+        )
         tag_path(objects_to_tag, s3, args.data_bucket, csv_data)
 
-        logger.info(f'Finished tagging objects", "data_bucket": "{args.data_bucket}, '
-                    f'"csv_location": "{args.csv_location}')
+        logger.info(
+            f'Finished tagging objects", "data_bucket": "{args.data_bucket}, '
+            f'"csv_location": "{args.csv_location}'
+        )
 
     except Exception as err:
         logger.error(f'Exception occurred for invocation", "error_message": "{err}')
