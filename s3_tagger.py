@@ -240,7 +240,8 @@ if __name__ == "__main__":
         csv_data = read_csv(args.csv_location, s3)
 
         logger.info(
-            f'Getting list of objects to tag", "data_bucket": "{args.data_bucket}", "data_s3_prefix": "{args.data_s3_prefix}'
+            f'Getting list of objects to tag", "data_bucket": "{args.data_bucket}", '
+            f'"data_s3_prefix": "{args.data_s3_prefix}'
         )
         objects_to_tag = get_objects_in_prefix(args.data_bucket, args.data_s3_prefix, s3)
 
@@ -248,10 +249,11 @@ if __name__ == "__main__":
                     f'"csv_location": "{args.csv_location}')
 
         logger.debug(f'Verbose list of items found and will attempt to tag", "data_bucket": "{args.data_bucket}",'
-                     f' "objects_to_tag": "{objects_to_tag}')
+                     f'"objects_to_tag": "{objects_to_tag}')
         tag_path(objects_to_tag, s3, args.data_bucket, csv_data)
 
         logger.info(f'Finished tagging objects", "data_bucket": "{args.data_bucket}, '
+                    f'"data_s3_prefix": "{args.data_s3_prefix}"'
                     f'"csv_location": "{args.csv_location}')
 
     except Exception as err:
