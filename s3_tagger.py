@@ -144,7 +144,9 @@ def get_objects_in_prefix(s3_bucket, s3_prefix, s3_client):
         objects_in_prefix = []
         paginator = s3_client.get_paginator("list_objects_v2")
 
-        page_iterator = paginator.paginate(Bucket=s3_bucket, Prefix=s3_prefix,PaginationConfig={'PageSize': 1})
+        page_iterator = paginator.paginate(
+            Bucket=s3_bucket, Prefix=s3_prefix, PaginationConfig={"PageSize": 1}
+        )
 
         for page in page_iterator:
             objects_in_prefix.extend(page["Contents"])
