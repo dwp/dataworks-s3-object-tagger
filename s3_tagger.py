@@ -96,7 +96,7 @@ def tag_object(key, s3_client, s3_bucket, csv_data):
 
     if pii_value == "":
         logger.warning(
-            f'No PII classification found for {table_name} {db_name}", "table_name": "{table_name}", "db_name": "{db_name}'
+            f'No PII value as the table {table_name} has yet to be classified ", "table_name": "{table_name}", "db_name": "{db_name}'
         )
     try:
         s3_client.put_object_tagging(

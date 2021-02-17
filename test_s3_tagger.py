@@ -12,7 +12,7 @@ with warnings.catch_warnings():
 
 TABLE_INFO_BUCKET = "tab-info-bucket"
 CSV_LOCATION = "s3://tab-info-bucket/table/info/path/table_info.csv"
-DATA_S3_PREFIX = "data/db1"
+DATA_S3_PREFIX = "/data/db1/"
 BUCKET_TO_TAG = "buckettotag"
 
 
@@ -63,6 +63,15 @@ def test_read_csv():
 
 
 @mock_s3
+def test_read_csv_exception():
+    s3_tagger.logger = mock.MagicMock()
+    s3_client = boto3.client("s3")
+
+    with pytest.raises(SystemExit):
+        output = s3_tagger.read_csv(CSV_LOCATION, s3_client)
+
+
+@mock_s3
 def test_tag_object(csv_data):
     s3_tagger.logger = mock.MagicMock()
     s3_client = boto3.client("s3")
@@ -81,7 +90,79 @@ def test_tag_object(csv_data):
 
 
 @mock_s3
-def test_get_objects_in_prexif():
+def test_tag_object_invalid_pii():
+    csv_data = {
+        "db1": [{"table": "tab1", "pii": 1}],
+    }
+
+    s3_tagger.logger = mock.MagicMock()
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(
+        Bucket=BUCKET_TO_TAG,
+        CreateBucketConfiguration={"LocationConstraint": "eu-west-1"},
+    )
+    s3_client.put_object(
+        Body="testcontent", Bucket=BUCKET_TO_TAG, Key="data/db1/tab1/00000_0"
+    )
+    s3_tagger.tag_object("data/db1/tab1/00000_0", s3_client, BUCKET_TO_TAG, csv_data)
+    response = s3_client.get_object_tagging(
+        Bucket=BUCKET_TO_TAG, Key="data/db1/tab1/00000_0"
+    )
+
+    pii_value = response["TagSet"][-1]["Value"]
+
+    assert pii_value == "None", f"Expected pii_value to be None (str), got: {pii_value}, type: {type(pii_value)}"
+
+
+@mock_s3
+def test_tag_object_tag_info_not_found():
+    csv_data = {
+        "db1": [{"table": "tabThatDoesntExist", "pii": "false"}]
+    }
+
+    s3_tagger.logger = mock.MagicMock()
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(
+        Bucket=BUCKET_TO_TAG,
+        CreateBucketConfiguration={"LocationConstraint": "eu-west-1"},
+    )
+    s3_client.put_object(
+        Body="testcontent", Bucket=BUCKET_TO_TAG, Key="data/db1/tab1/00000_0"
+    )
+    tag_result = s3_tagger.tag_object("data/db1/tab1/00000_0", s3_client, BUCKET_TO_TAG, csv_data)
+    response = s3_client.get_object_tagging(
+        Bucket=BUCKET_TO_TAG, Key="data/db1/tab1/00000_0"
+    )
+
+    assert tag_result == 0
+    assert response["TagSet"][-1]["Value"] == "None"
+
+
+@mock_s3
+def test_tag_object_exception():
+    csv_data = {
+        "db1": [{"table": "tabThatDoesntExist", "pii": "false"}]
+    }
+
+    s3_tagger.logger = mock.MagicMock()
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(
+        Bucket=BUCKET_TO_TAG,
+        CreateBucketConfiguration={"LocationConstraint": "eu-west-1"},
+    )
+    s3_client.put_object(
+        Body="testcontent", Bucket=BUCKET_TO_TAG, Key="data/db1/tab1/00000_0"
+    )
+    s3_tagger.tag_object("data/db/tab1/00000_0", s3_client, BUCKET_TO_TAG, csv_data)
+    response = s3_client.get_object_tagging(
+        Bucket=BUCKET_TO_TAG, Key="data/db1/tab1/00000_0"
+    )
+
+    assert len(response["TagSet"]) == 0
+
+
+@mock_s3
+def test_get_objects_in_prefix():
     s3_tagger.logger = mock.MagicMock()
     s3_client = boto3.client("s3")
     s3_client.create_bucket(
@@ -96,6 +177,24 @@ def test_get_objects_in_prexif():
     )
     response = s3_tagger.get_objects_in_prefix(BUCKET_TO_TAG, DATA_S3_PREFIX, s3_client)
     assert len(response) == 1, "invalid objects were not filtered out"
+
+
+@mock_s3
+def test_get_objects_in_prefix_exception():
+    s3_tagger.logger = mock.MagicMock()
+    s3_client = boto3.client("s3")
+    s3_client.create_bucket(
+        Bucket=BUCKET_TO_TAG,
+        CreateBucketConfiguration={"LocationConstraint": "eu-east-1"},
+    )
+    s3_client.put_object(
+        Body="testcontent", Bucket=BUCKET_TO_TAG, Key="data/db1/tab1/00000_0"
+    )
+    s3_client.put_object(
+        Body="testcontent", Bucket=BUCKET_TO_TAG, Key="data/db1/$folder$"
+    )
+    with pytest.raises(Exception):
+        response = s3_tagger.get_objects_in_prefix(BUCKET_TO_TAG, "abcd", s3_client)
 
 
 @mock_s3
