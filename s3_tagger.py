@@ -138,15 +138,23 @@ def get_objects_in_prefix(s3_bucket, s3_prefix, s3_client):
         logger.info(
             f'Contacting S3 for a list of objects", "data_bucket": "{s3_bucket}", "data_s3_prefix": "{s3_prefix}'
         )
-        objects_in_prefix = s3_client.list_objects_v2(
-            Bucket=s3_bucket, Prefix=s3_prefix
-        )["Contents"]
-        objects_to_tag = []
-        # Filter out temp folders that do not hold any objects for tagging
+
+        objects_in_prefix = []
+        paginator = s3_client.get_paginator("list_objects_v2")
+
+        page_iterator = paginator.paginate(Bucket=s3_bucket, Prefix=s3_prefix)
+
+        for page in page_iterator:
+            objects_in_prefix.append(page["Contents"])
+
         logger.info('Number of "objects_returned": "{len(objects_in_prefix)}')
-        for key in objects_in_prefix:
-            if "$folder$" not in key["Key"]:
-                objects_to_tag.append(key["Key"])
+
+        # Filter out temp folders that do not hold any objects for tagging
+        objects_to_tag = []
+        for page in objects_in_prefix:
+            for key in page:
+                if "$folder$" not in key["Key"]:
+                    objects_to_tag.append(key["Key"])
         logger.info('Number of "objects_filtered": "{len(objects_in_prefix)}')
 
         return objects_to_tag
