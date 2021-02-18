@@ -98,10 +98,14 @@ def tag_object(key, s3_client, s3_bucket, csv_data):
         pii_value = ""
 
     if db_missing_from_csv:
-        logger.warning(f'Database is missing from the CSV data ", "table_name": "{table_name}", "db_name": "{db_name}')
+        logger.warning(
+            f'Database is missing from the CSV data ", "table_name": "{table_name}", "db_name": "{db_name}'
+        )
 
     if not tag_info_found:
-        logger.warning(f'Table is missing from the CSV data ", "table_name": "{table_name}", "db_name": "{db_name}')
+        logger.warning(
+            f'Table is missing from the CSV data ", "table_name": "{table_name}", "db_name": "{db_name}'
+        )
 
     elif pii_value == "":
         logger.info(
