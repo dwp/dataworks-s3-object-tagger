@@ -111,7 +111,9 @@ def test_tag_object_invalid_pii():
 
     pii_value = response["TagSet"][-1]["Value"]
 
-    assert pii_value == "None", f"Expected pii_value to be None (str), got: {pii_value}, type: {type(pii_value)}"
+    assert (
+        pii_value == "None"
+    ), f"Expected pii_value to be None (str), got: {pii_value}, type: {type(pii_value)}"
 
 
 @mock_s3
@@ -119,7 +121,7 @@ def test_tag_object_tag_info_not_found():
     csv_data = {
         "db1": [{"table": "tab1", "pii": "false"}],
         "db2": [{"table": "tab1", "pii": "false"}],
-        "db3": [{"table": "tab3", "pii": "false"}]
+        "db3": [{"table": "tab3", "pii": "false"}],
     }
 
     key = "data/db1/tab2/00000_0"
@@ -130,14 +132,10 @@ def test_tag_object_tag_info_not_found():
         Bucket=BUCKET_TO_TAG,
         CreateBucketConfiguration={"LocationConstraint": "eu-west-1"},
     )
-    s3_client.put_object(
-        Body="testcontent", Bucket=BUCKET_TO_TAG, Key=key
-    )
+    s3_client.put_object(Body="testcontent", Bucket=BUCKET_TO_TAG, Key=key)
 
     tag_result = s3_tagger.tag_object(key, s3_client, BUCKET_TO_TAG, csv_data)
-    response = s3_client.get_object_tagging(
-        Bucket=BUCKET_TO_TAG, Key=key
-    )
+    response = s3_client.get_object_tagging(Bucket=BUCKET_TO_TAG, Key=key)
 
     pii_value = response["TagSet"][-1]["Value"]
     call_count = s3_tagger.logger.warning.call_count
@@ -146,10 +144,13 @@ def test_tag_object_tag_info_not_found():
         'Table is missing from the CSV data ", "table_name": "tab2", "db_name": "db1'
     )
 
-    s3_tagger.logger.info.assert_called_once_with(f'Successfully tagged", "object": "{key}')
+    s3_tagger.logger.info.assert_called_once_with(
+        f'Successfully tagged", "object": "{key}'
+    )
 
-    assert not call_count > 2, \
-        f"Expected logger.warning to only be called twice, called {call_count} times"
+    assert (
+        not call_count > 2
+    ), f"Expected logger.warning to only be called twice, called {call_count} times"
     assert tag_result == 0, f"Expected tag_object to return 0, got: {tag_result}"
     assert pii_value == "None", f"Expected pii_value to be 'None', got: {pii_value}"
 
@@ -159,7 +160,7 @@ def test_tag_object_missing_database_and_table_name():
     csv_data = {
         "db1": [{"table": "tab1", "pii": "false"}],
         "db2": [{"table": "tab2", "pii": "false"}],
-        "db3": [{"table": "tab3", "pii": "false"}]
+        "db3": [{"table": "tab3", "pii": "false"}],
     }
 
     key = "data/db4/tab4/00000_0"
@@ -170,37 +171,37 @@ def test_tag_object_missing_database_and_table_name():
         Bucket=BUCKET_TO_TAG,
         CreateBucketConfiguration={"LocationConstraint": "eu-west-1"},
     )
-    s3_client.put_object(
-        Body="testcontent", Bucket=BUCKET_TO_TAG, Key=key
-    )
+    s3_client.put_object(Body="testcontent", Bucket=BUCKET_TO_TAG, Key=key)
 
     tag_result = s3_tagger.tag_object(key, s3_client, BUCKET_TO_TAG, csv_data)
-    response = s3_client.get_object_tagging(
-        Bucket=BUCKET_TO_TAG, Key=key
-    )
+    response = s3_client.get_object_tagging(Bucket=BUCKET_TO_TAG, Key=key)
 
     pii_value = response["TagSet"][-1]["Value"]
     call_count = s3_tagger.logger.warning.call_count
 
     s3_tagger.logger.warning.assert_has_calls(
-        [mock.call(log) for log in [
-            'Database is missing from the CSV data ", "table_name": "tab4", "db_name": "db4',
-            'Table is missing from the CSV data ", "table_name": "tab4", "db_name": "db4'
-        ]]
+        [
+            mock.call(log)
+            for log in [
+                'Database is missing from the CSV data ", "table_name": "tab4", "db_name": "db4',
+                'Table is missing from the CSV data ", "table_name": "tab4", "db_name": "db4',
+            ]
+        ]
     )
-    s3_tagger.logger.info.assert_called_once_with(f'Successfully tagged", "object": "{key}')
+    s3_tagger.logger.info.assert_called_once_with(
+        f'Successfully tagged", "object": "{key}'
+    )
 
-    assert not call_count > 2, \
-        f"Expected logger.warning to only be called twice, called {call_count} times"
+    assert (
+        not call_count > 2
+    ), f"Expected logger.warning to only be called twice, called {call_count} times"
     assert tag_result == 0, f"Expected tag_object to return 0, got: {tag_result}"
     assert pii_value == "None", f"Expected pii_value to be 'None', got: {pii_value}"
 
 
 @mock_s3
 def test_tag_object_exception():
-    csv_data = {
-        "db1": [{"table": "tab1", "pii": "false"}]
-    }
+    csv_data = {"db1": [{"table": "tab1", "pii": "false"}]}
 
     s3_tagger.logger = mock.MagicMock()
     s3_client = boto3.client("s3")
@@ -280,10 +281,7 @@ def test_tag_path(objects_to_tag, csv_data):
 
 @mock_s3
 def test_tag_path_no_objects_tagged(csv_data):
-    objects_to_tag = [
-        "data/db1/tab1/00000_0",
-        "data/db2/tab2/00000_0"
-    ]
+    objects_to_tag = ["data/db1/tab1/00000_0", "data/db2/tab2/00000_0"]
 
     s3_tagger.tag_object = mock.MagicMock()
     s3_tagger.tag_object.return_value = 0
@@ -307,10 +305,13 @@ def test_tag_path_no_objects_tagged(csv_data):
     )
 
     s3_tagger.logger.info.assert_has_calls(
-        [mock.call(log) for log in [
-            'Found objects to tag", "number_of_objects": "2',
-            'Did not tag any objects", "number_of_objects": "0'
-        ]]
+        [
+            mock.call(log)
+            for log in [
+                'Found objects to tag", "number_of_objects": "2',
+                'Did not tag any objects", "number_of_objects": "0',
+            ]
+        ]
     )
 
     assert len(response["TagSet"]) == 0
